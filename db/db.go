@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
+	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -35,31 +37,24 @@ func Disconnect(db *sql.DB) {
 	}
 }
 
-func CreateTables(db *sql.DB) {
-	_, err := db.Query(`
-		CREATE TABLE IF NOT EXISTS categories (
- 			id INT NOT NULL AUTO_INCREMENT,
- 			name VARCHAR(50) NOT NULL,
-      		PRIMARY KEY (id)
-        );
-    `)
+func ExecuteSchemaFromFile(db *sql.DB, filePath string) {
+	content, err := os.ReadFile(filePath)
 	if err != nil {
-		log.Fatalf("failed to create table 'categories': %s\n", err)
+		log.Fatalf("failed to read SQL schema file: %s\n", err)
 	}
-	log.Println("table 'categories' found or created")
-	_, err = db.Query(`
-		CREATE TABLE IF NOT EXISTS events (
-    		id INT NOT NULL AUTO_INCREMENT,
-     		name VARCHAR(50) NOT NULL,
-      		description VARCHAR(1000),
-       		category_id INT NOT NULL,
-        	location VARCHAR(200),
-        	PRIMARY KEY (id),
-        	FOREIGN KEY (category_id) REFERENCES categories(id)
-    	);
-    `)
-	if err != nil {
-		log.Fatalf("failed to create table 'events': %s\n", err)
+
+	statements := strings.Split(string(content), ";")
+	for _, stmt := range statements {
+		trimmed := strings.TrimSpace(stmt)
+		if trimmed == "" {
+			continue
+		}
+
+		_, err := db.Exec(trimmed)
+		if err != nil {
+			log.Fatalf("failed to execute SQL statement: %s\n%s\n", err, trimmed)
+		}
 	}
-	log.Println("table 'events' found or created")
+
+	log.Println("SQL schema executed successfully")
 }

@@ -18,11 +18,11 @@ func main() {
 
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-
+	dbName := "somos_events"
 	db := conn.Connect(dbUser, dbPassword, dbName)
-	conn.CreateTables(db)
+
 	defer conn.Disconnect(db)
+	conn.ExecuteSchemaFromFile(db, "db/schema.sql")
 	handler := handlers.New(db)
 	mux := http.NewServeMux()
 
