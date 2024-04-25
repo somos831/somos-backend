@@ -1,5 +1,5 @@
 -- schema.sql
--- defines the schema for the `somos_events` database
+-- defines the schema for the database
 
 CREATE TABLE IF NOT EXISTS categories (
     id INT NOT NULL AUTO_INCREMENT,

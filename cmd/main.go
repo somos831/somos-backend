@@ -18,7 +18,7 @@ func main() {
 
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
-	dbName := "somos_events"
+	dbName := os.Getenv("DB_NAME")
 	db := conn.Connect(dbUser, dbPassword, dbName)
 
 	defer conn.Disconnect(db)
