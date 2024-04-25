@@ -1,12 +1,6 @@
 -- schema.sql
 -- defines the schema for the database
 
-CREATE TABLE IF NOT EXISTS categories (
-    id INT NOT NULL AUTO_INCREMENT,
-    name VARCHAR(50) NOT NULL,
-    PRIMARY KEY (id)
-);
-
 CREATE TABLE IF NOT EXISTS events (
     id INT NOT NULL AUTO_INCREMENT,
     name VARCHAR(50) NOT NULL,
@@ -14,5 +8,5 @@ CREATE TABLE IF NOT EXISTS events (
     category_id INT NOT NULL,
     location VARCHAR(200),
     PRIMARY KEY (id),
-    FOREIGN KEY (category_id) REFERENCES categories(id)
+    FOREIGN KEY (category_id) REFERENCES event_categories(id)
 );
