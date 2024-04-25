@@ -1,6 +1,6 @@
 package models
 
-import "github.com/villaleo/somos-events/errors/httperror"
+import "github.com/somos831/somos-backend/errors/httperror"
 
 type Event struct {
 	Id          int      `json:"id"`

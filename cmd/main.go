@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	conn "github.com/villaleo/somos-events/db"
-	"github.com/villaleo/somos-events/handlers"
+	conn "github.com/somos831/somos-backend/db"
+	"github.com/somos831/somos-backend/handlers"
 )
 
 func main() {
@@ -19,10 +19,10 @@ func main() {
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
-
 	db := conn.Connect(dbUser, dbPassword, dbName)
-	conn.CreateTables(db)
+
 	defer conn.Disconnect(db)
+	conn.ExecuteSchemaFromFile(db, "db/schema.sql")
 	handler := handlers.New(db)
 	mux := http.NewServeMux()
 

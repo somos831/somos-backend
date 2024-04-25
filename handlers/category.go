@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/villaleo/somos-events/errors/httperror"
-	"github.com/villaleo/somos-events/models"
+	"github.com/somos831/somos-backend/errors/httperror"
+	"github.com/somos831/somos-backend/models"
 )
 
 // ListAllCategories lists all the categories in the database.
