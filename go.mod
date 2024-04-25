@@ -1,4 +1,4 @@
-module github.com/villaleo/somos-events
+module github.com/somos831/somos-backend
 
 go 1.22.1
 

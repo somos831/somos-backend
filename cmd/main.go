@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	conn "github.com/villaleo/somos-events/db"
-	"github.com/villaleo/somos-events/handlers"
+	conn "github.com/somos831/somos-backend/db"
+	"github.com/somos831/somos-backend/handlers"
 )
 
 func main() {
