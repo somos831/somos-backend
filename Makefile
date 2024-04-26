@@ -1,6 +1,8 @@
 # Load environment variables from .env file
-include .env
-export
+ifneq (,$(wildcard ./.env))
+	include .env
+	export
+endif
 
 # Run the Go application
 run: migrate-up
