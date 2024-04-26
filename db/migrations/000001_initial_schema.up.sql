@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS user_status (
     status_name VARCHAR(50) UNIQUE NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS user_role (
+CREATE TABLE IF NOT EXISTS user_roles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     role_name VARCHAR(50) UNIQUE NOT NULL
 );
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS users (
     status_id INT,
     role_id INT,
     FOREIGN KEY (status_id) REFERENCES user_status(id),
-    FOREIGN KEY (role_id) REFERENCES user_role(id)
+    FOREIGN KEY (role_id) REFERENCES user_roles(id)
 );
 
 CREATE TABLE IF NOT EXISTS event_categories (

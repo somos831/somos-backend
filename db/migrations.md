@@ -21,8 +21,17 @@ This will create two files under `db/migrations`. One is the up migration and th
 
 To run **up** migrations:
 
-```migrate -database "mysql://username:password@tcp(host:port)/database" -path "path/to/migrations" up```
+```migrate -database "mysql://$(DB_USER):$(DB_PASSWORD)@tcp($(DB_HOST):$(DB_PORT))/$(DB_NAME)" -path "db/migrations" up```
+
+The command above can also be ran by running `make migrate-up` in the root of the project.
 
 To run **down** migrations:
 
+**NOTE** This command will run all of the down migrations and essentially clear your database.
+
 ```migrate -database "mysql://username:password@tcp(host:port)/database" -path "path/to/migrations" down```
+
+To run only N migrations down you would run:
+```migrate -database "mysql://username:password@tcp(host:port)/database" -path "path/to/migrations" down N``` replacing `N` with the number of migrations.
+
+more information on golang-migrate can be found on the [repo](https://github.com/golang-migrate/migrate) or by running `migrate -help` in your terminal.
