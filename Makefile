@@ -1,9 +1,17 @@
+# Load environment variables from .env file
+include .env
+export
+
 # Run the Go application
-run:
+run: migrate-up
 	@go run cmd/main.go
 
+# Run database migrations
+migrate-up:
+	migrate -database "mysql://$(DB_USER):$(DB_PASSWORD)@tcp($(DB_HOST):$(DB_PORT))/$(DB_NAME)" -path "db/migrations" up
+
 # Build the Go application into a binary
-build: lint test
+build: lint migrate-up test
 	@go build -o bin/myapp cmd/main.go
 
 # Clean up generated files

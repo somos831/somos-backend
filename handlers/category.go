@@ -23,7 +23,7 @@ func (h *handler) ListAllCategories(w http.ResponseWriter, r *http.Request) erro
 		whereArgs = append(whereArgs, "%"+name+"%")
 	}
 
-	query := fmt.Sprintf("SELECT * FROM categories %s;", whereClause)
+	query := fmt.Sprintf("SELECT * FROM event_categories %s;", whereClause)
 	results, err := h.db.Query(query, whereArgs...)
 	if err != nil {
 		return httperror.InternalServer(err)
@@ -74,7 +74,7 @@ func (h *handler) CreateCategory(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	result, err := h.db.Exec(`
-		INSERT INTO categories (name) VALUES (?);
+		INSERT INTO event_categories (name) VALUES (?);
 	`, category.Name)
 	if err != nil {
 		return httperror.InternalServer(err)
@@ -110,7 +110,7 @@ func (h *handler) UpdateCategory(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	query := `UPDATE categories SET name = ? WHERE id = ?;`
+	query := `UPDATE event_categories SET name = ? WHERE id = ?;`
 	_, err = h.db.Exec(query, updatedCategory.Name, category.Id)
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
@@ -136,7 +136,7 @@ func (h *handler) DeleteCategory(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	query := `DELETE from categories WHERE id = ?;`
+	query := `DELETE from event_categories WHERE id = ?;`
 	_, err = h.db.Exec(query, category.Id)
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
@@ -159,7 +159,7 @@ func (h *handler) CategoryById(id string) (*models.Category, error) {
 	if err != nil {
 		return nil, httperror.BadRequest("category id should be an integer")
 	}
-	result := h.db.QueryRow(`SELECT * FROM categories WHERE id = ?`, categoryId)
+	result := h.db.QueryRow(`SELECT * FROM event_categories WHERE id = ?`, categoryId)
 
 	var category models.Category
 	err = result.Scan(&category.Id, &category.Name)

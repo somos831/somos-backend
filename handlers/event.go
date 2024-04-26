@@ -36,7 +36,7 @@ func (h *handler) ListAllEvents(w http.ResponseWriter, r *http.Request) error {
 	results, err := h.db.Query(fmt.Sprintf(`
 		SELECT events.id, events.name, events.description, events.location,
 			categories.id as category_id, categories.name as category_name
-		FROM events INNER JOIN categories
+		FROM events INNER JOIN event_categories AS categories
 		ON events.category_id = categories.id
 		%s;`, whereClause), whereArgs...)
 	if err != nil {
@@ -250,7 +250,7 @@ func (h *handler) eventById(id string) (*models.Event, error) {
 	result := h.db.QueryRow(`
 		SELECT events.id, events.name, events.description, events.location,
 			categories.id as category_id, categories.name as category_name
-		FROM events INNER JOIN categories
+		FROM events INNER JOIN event_categories AS categories
 		ON events.category_id = categories.id
 		WHERE events.id = ?;
 		`, eventId)
