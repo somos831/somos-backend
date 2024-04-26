@@ -6,6 +6,13 @@ on:
   pull_request:
     branches: ["main"]
 
+env:
+  DB_USER: ${{ secrets.DB_USER }}
+  DB_NAME: ${{ secrets.DB_NAME }}
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  DB_HOST: ${{ secrets.DB_HOST }}
+  DB_PORT: ${{ secrets.DB_PORT }}
+
 permissions:
   contents: read
   pull-requests: read
@@ -20,7 +27,10 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "1.22.1"
+      - run: |
+          echo -e "DB_USER=${{ env.DB_USER }}\nDB_NAME=${{ env.DB_NAME }}\nDB_PASSWORD=${{ env.DB_PASSWORD }}\nDB_HOST=${{ env.DB_HOST }}\nDB_PORT=${{ env.DB_PORT }}\n" > .env
       - run: make test
+      - run: rm .env
   lint-checks:
     name: Run lint and format checks
     runs-on: ubuntu-latest
