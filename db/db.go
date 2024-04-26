@@ -4,25 +4,75 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
-	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func Connect(user, password, name string) *sql.DB {
-	connInfo := fmt.Sprintf("%s:%s@/%s", user, password, name)
-	db, err := sql.Open("mysql", connInfo)
+type Config struct {
+	user     string
+	password string
+	host     string
+	port     int
+	name     string
+}
+
+func DefaultConfig(name string) Config {
+	return Config{
+		user:     "root",
+		password: "root",
+		host:     "127.0.0.1",
+		port:     3306,
+		name:     name,
+	}
+}
+
+func (cfg Config) SetUser(val string) Config {
+	cfg.user = val
+	return cfg
+}
+
+func (cfg Config) SetPassword(val string) Config {
+	cfg.password = val
+	return cfg
+}
+
+func (cfg Config) SetHost(val string) Config {
+	cfg.host = val
+	return cfg
+}
+
+func (cfg Config) SetPort(val int) Config {
+	cfg.port = val
+	return cfg
+}
+
+func (cfg Config) SetName(val string) Config {
+	cfg.name = val
+	return cfg
+}
+
+func (cfg Config) dataSource() string {
+	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",
+		cfg.user,
+		cfg.password,
+		cfg.host,
+		cfg.port,
+		cfg.name,
+	)
+}
+
+func Connect(cfg Config) *sql.DB {
+	db, err := sql.Open("mysql", cfg.dataSource())
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("connection failed: %s\nconfig: mysql://%s\n", err, cfg.dataSource())
 	}
 
 	err = db.Ping()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-	log.Printf("connected to mysql database %q\n", name)
+	log.Printf("connected to mysql database %q\n", cfg.name)
 
 	db.SetConnMaxLifetime(time.Minute * 3)
 	db.SetMaxOpenConns(10)
@@ -33,28 +83,6 @@ func Connect(user, password, name string) *sql.DB {
 
 func Disconnect(db *sql.DB) {
 	if err := db.Close(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-}
-
-func ExecuteSchemaFromFile(db *sql.DB, filePath string) {
-	content, err := os.ReadFile(filePath)
-	if err != nil {
-		log.Fatalf("failed to read SQL schema file: %s\n", err)
-	}
-
-	statements := strings.Split(string(content), ";")
-	for _, stmt := range statements {
-		trimmed := strings.TrimSpace(stmt)
-		if trimmed == "" {
-			continue
-		}
-
-		_, err := db.Exec(trimmed)
-		if err != nil {
-			log.Fatalf("failed to execute SQL statement: %s\n%s\n", err, trimmed)
-		}
-	}
-
-	log.Println("SQL schema executed successfully")
 }
