@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS events;
+
+DROP TABLE IF EXISTS images;
+DROP TABLE IF EXISTS locations;
+DROP TABLE IF EXISTS event_more_info;
