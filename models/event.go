@@ -5,17 +5,17 @@ import (
 )
 
 type Event struct {
-	Id           int       `json:"id"`
-	Title        string    `json:"title"`
-	Description  *string   `json:"description"`
-	Organization string    `json:"organization"`
-	ImgId        *int      `json:"imgId"`
-	LocationId   *int      `json:"locationId"`
-	Price        float32   `json:"price"`
-	CategoryId   int       `json:"categoryId"`
-	MoreInfoId   *int      `json:"moreInfoId"`
-	CreatedAt    time.Time `json:"createdAt"`
-	UpdatedAt    time.Time `json:"updatedAt"`
+	Id             int       `json:"id"`
+	Title          string    `json:"title"`
+	Description    *string   `json:"description"`
+	OrganizationId string    `json:"organizationId"`
+	ImgId          *int      `json:"imgId"`
+	LocationId     *int      `json:"locationId"`
+	Price          float32   `json:"price"`
+	CategoryId     int       `json:"categoryId"`
+	MoreInfoId     *int      `json:"moreInfoId"`
+	CreatedAt      time.Time `json:"createdAt"`
+	UpdatedAt      time.Time `json:"updatedAt"`
 }
 
 func (e Event) Validate() error {
