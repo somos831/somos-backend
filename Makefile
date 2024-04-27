@@ -8,7 +8,11 @@ run: migrate-up
 
 # Run database migrations
 migrate-up:
-	migrate -database "mysql://$(DB_USER):$(DB_PASSWORD)@tcp($(DB_HOST):$(DB_PORT))/$(DB_NAME)" -path "db/migrations" up
+	@migrate -database "mysql://$(DB_USER):$(DB_PASSWORD)@tcp($(DB_HOST):$(DB_PORT))/$(DB_NAME)" -path "db/migrations" up
+
+# Rollback database migrations. Append n= to specify how many rollbacks should execute.
+migrate-down:
+	@migrate -database "mysql://$(DB_USER):$(DB_PASSWORD)@tcp($(DB_HOST):$(DB_PORT))/$(DB_NAME)" -path "db/migrations" down $(n)
 
 # Build the Go application into a binary
 build: lint migrate-up test
