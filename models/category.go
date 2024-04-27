@@ -1,7 +1,5 @@
 package models
 
-import "github.com/somos831/somos-backend/errors/httperror"
-
 type Category struct {
 	Id   int    `json:"id"`
 	Name string `json:"name"`
@@ -9,10 +7,10 @@ type Category struct {
 
 func (c Category) Validate() error {
 	if len(c.Name) == 0 {
-		return httperror.BadRequest("name cannot be empty")
+		return validationErr("name cannot be empty")
 	}
 	if len(c.Name) > 50 {
-		return httperror.BadRequest("name cannot be longer than 50 characters")
+		return validationErr("name cannot be longer than 50 characters")
 	}
 
 	return nil
