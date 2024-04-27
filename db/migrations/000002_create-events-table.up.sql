@@ -40,5 +40,5 @@ CREATE TABLE IF NOT EXISTS events (
     FOREIGN KEY (img_id) REFERENCES images(id),
     FOREIGN KEY (location_id) REFERENCES locations(id),
     FOREIGN KEY (more_info_id) REFERENCES event_more_info(id),
-    FOREIGN KEY (category_id) REFERENCES categories(id)
+    FOREIGN KEY (category_id) REFERENCES event_categories(id)
 );
