@@ -1,12 +1,12 @@
 package models
 
-type EventMoreInfo struct {
+type EventMeta struct {
 	Id   int     `json:"id"`
 	Info *string `json:"info"`
 	Url  *string `json:"url"`
 }
 
-func (e EventMoreInfo) Validate() error {
+func (e EventMeta) Validate() error {
 	if e.Info != nil && len(*e.Info) > 1500 {
 		return validationErr("info must be less than 1500 characters long")
 	}
