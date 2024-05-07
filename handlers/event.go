@@ -21,7 +21,7 @@ type eventQueryParams struct {
 }
 
 // ListAllEvents lists all the events in the database.
-func (h *handler) ListAllEvents(w http.ResponseWriter, r *http.Request) error {
+func (h *Server) ListAllEvents(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Content-Type", "application/json")
 
 	query := r.URL.Query()
@@ -62,7 +62,7 @@ func (h *handler) ListAllEvents(w http.ResponseWriter, r *http.Request) error {
 }
 
 // GetEvent returns a single event by its id.
-func (h *handler) GetEvent(w http.ResponseWriter, r *http.Request) error {
+func (h *Server) GetEvent(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Content-Type", "application/json")
 	id := r.PathValue("id")
 	event, err := h.eventById(id)
@@ -77,7 +77,7 @@ func (h *handler) GetEvent(w http.ResponseWriter, r *http.Request) error {
 }
 
 // CreateEvent creates a new event using the form data.
-func (h *handler) CreateEvent(w http.ResponseWriter, r *http.Request) error {
+func (h *Server) CreateEvent(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Content-Type", "application/json")
 
 	if err := r.ParseForm(); err != nil {
@@ -132,7 +132,7 @@ func (h *handler) CreateEvent(w http.ResponseWriter, r *http.Request) error {
 }
 
 // UpdateEvent updates an event by its id.
-func (h *handler) UpdateEvent(w http.ResponseWriter, r *http.Request) error {
+func (h *Server) UpdateEvent(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Content-Type", "application/json")
 
 	event, err := h.eventById(r.PathValue("id"))
@@ -190,7 +190,7 @@ func (h *handler) UpdateEvent(w http.ResponseWriter, r *http.Request) error {
 }
 
 // DeleteEvent deletes an event by its id.
-func (h *handler) DeleteEvent(w http.ResponseWriter, r *http.Request) error {
+func (h *Server) DeleteEvent(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Content-Type", "application/json")
 
 	event, err := h.eventById(r.PathValue("id"))
@@ -242,7 +242,7 @@ func buildWhereClause(params eventQueryParams) (string, []interface{}) {
 	return whereClause, whereArgs
 }
 
-func (h *handler) eventById(id string) (*models.Event, error) {
+func (h *Server) eventById(id string) (*models.Event, error) {
 	eventId, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, httperror.BadRequest("id should be an integer")
