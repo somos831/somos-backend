@@ -41,6 +41,7 @@ func FindUserByID(db *sql.DB, userID int) (*User, error) {
 			return nil, errors.New("user not found")
 		}
 		log.Println(err)
+
 		return nil, err
 	}
 
@@ -55,6 +56,7 @@ func InsertUser(db *sql.DB, user *User) (int, error) {
 	result, err := db.Exec(query, user.Username, user.Email, user.Password, user.FirstName, user.LastName, user.ProfilePicture, user.StatusID, user.RoleID)
 	if err != nil {
 		log.Printf("Failed to create user due to: %s\n", err.Error())
+
 		return 0, err
 	}
 
@@ -62,6 +64,7 @@ func InsertUser(db *sql.DB, user *User) (int, error) {
 	userID, err := result.LastInsertId()
 	if err != nil {
 		log.Printf("Failed to fetch created user ID: %s\n", err.Error())
+
 		return 0, err
 	}
 

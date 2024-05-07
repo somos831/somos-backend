@@ -10,6 +10,10 @@ import (
 	"github.com/somos831/somos-backend/responses"
 )
 
+const (
+	UserNotFoundErr = "user not found"
+)
+
 // Create User: Endpoint for creating a new user account.
 func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 
@@ -53,7 +57,7 @@ func (s *Server) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	foundUser, err := models.FindUserByID(s.db, userID)
 
 	if err != nil {
-		if err.Error() == "user not found" {
+		if err.Error() == UserNotFoundErr {
 			responses.ERROR(w, http.StatusNotFound, errors.New("User with given ID does not exist"))
 		} else {
 			responses.ERROR(w, http.StatusInternalServerError, errors.New("Failed to get user"))
@@ -87,7 +91,7 @@ func (s *Server) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	err = s.Validator.ValidateUpdatedFields(user)
 	if err != nil {
 
-		if err.Error() == "user not found" {
+		if err.Error() == UserNotFoundErr {
 			responses.ERROR(w, http.StatusNotFound, errors.New("User with given ID does not exist"))
 		} else {
 			responses.ERROR(w, http.StatusBadRequest, err)
@@ -117,7 +121,7 @@ func (s *Server) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	user, err := models.FindUserByID(s.db, userID)
 
 	if err != nil {
-		if err.Error() == "user not found" {
+		if err.Error() == UserNotFoundErr {
 			responses.ERROR(w, http.StatusNotFound, errors.New("User with given ID was not found"))
 			return
 		} else {
