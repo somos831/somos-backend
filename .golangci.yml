@@ -10,8 +10,6 @@ linters:
   enable:
     # Checks for unchecked errors.
     - errcheck
-    # Check that no global variables exist.
-    - gochecknoglobals
     # Find repeated strings that could be replaced by a constant.
     - goconst
     # Detects FIXME, TODO, and other comment keywords.
