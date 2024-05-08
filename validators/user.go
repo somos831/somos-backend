@@ -90,10 +90,7 @@ func (v *Validator) ValidateUpdatedFields(user models.User) error {
 
 func validateUserFields(user models.User) error {
 
-	// Validate user input (e.g., check for required fields, format validation)
 	if user.Username == "" || user.Email == "" {
-		// http.Error(w, "Username, email, and password are required fields", http.StatusBadRequest)
-		// return
 		return errors.New("Username and email are required fields")
 	}
 
@@ -107,8 +104,6 @@ func validateUserFields(user models.User) error {
 
 	return nil
 }
-
-// notes: form in the front end should default to "active" status and "admin"? role?
 
 func isValidEmail(email string) bool {
 

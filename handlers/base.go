@@ -19,7 +19,7 @@ type Server struct {
 	Validator validators.Validator
 }
 
-func (server *Server) Initialize() {
+func (server *Server) InitServer() {
 
 	err := godotenv.Load()
 	if err != nil {
@@ -38,7 +38,7 @@ func (server *Server) Initialize() {
 	server.Router = http.NewServeMux()
 
 	// Initialize routes:
-	server.InitializeRoutes()
+	server.InitRoutes()
 
 	// Initialize validator:
 	server.Validator = validators.NewValidator(db)

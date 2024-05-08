@@ -1,6 +1,6 @@
 package handlers
 
-func (s *Server) InitializeRoutes() {
+func (s *Server) InitRoutes() {
 	s.Router.HandleFunc("GET /events", HttpHandler(s.ListAllEvents))
 	s.Router.HandleFunc("GET /events/{id}", HttpHandler(s.GetEvent))
 	s.Router.HandleFunc("POST /events", HttpHandler(s.CreateEvent))

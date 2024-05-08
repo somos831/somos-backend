@@ -78,8 +78,10 @@ func UpdateUser(db *sql.DB, user *User) error {
 	_, err := db.Exec(query, user.Username, user.Email, user.FirstName, user.LastName, user.ProfilePicture, user.StatusID, user.RoleID, user.ID)
 	if err != nil {
 		log.Printf("Failed to update user due to: %s", err.Error())
+
 		return err
 	}
+
 	return nil
 }
 
