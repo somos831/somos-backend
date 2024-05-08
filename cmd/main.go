@@ -1,9 +1,10 @@
 package main
 
-import (
-	"github.com/somos831/somos-backend/server"
-)
+import "github.com/somos831/somos-backend/handlers"
 
 func main() {
-	server.Run()
+	server := handlers.Server{}
+
+	server.InitServer()
+	server.Run(":8080")
 }
