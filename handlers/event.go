@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gorilla/mux"
 	"github.com/somos831/somos-backend/errors/httperror"
 	"github.com/somos831/somos-backend/models"
 )
@@ -64,7 +65,8 @@ func (h *Server) ListAllEvents(w http.ResponseWriter, r *http.Request) error {
 // GetEvent returns a single event by its id.
 func (h *Server) GetEvent(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Content-Type", "application/json")
-	id := r.PathValue("id")
+	params := mux.Vars(r)
+	id := params["id"]
 	event, err := h.eventById(id)
 	if err != nil {
 		return err
@@ -134,8 +136,8 @@ func (h *Server) CreateEvent(w http.ResponseWriter, r *http.Request) error {
 // UpdateEvent updates an event by its id.
 func (h *Server) UpdateEvent(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Content-Type", "application/json")
-
-	event, err := h.eventById(r.PathValue("id"))
+	params := mux.Vars(r)
+	event, err := h.eventById(params["id"])
 	if err != nil {
 		return err
 	}
@@ -192,8 +194,9 @@ func (h *Server) UpdateEvent(w http.ResponseWriter, r *http.Request) error {
 // DeleteEvent deletes an event by its id.
 func (h *Server) DeleteEvent(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Content-Type", "application/json")
+	params := mux.Vars(r)
 
-	event, err := h.eventById(r.PathValue("id"))
+	event, err := h.eventById(params["id"])
 	if err != nil {
 		return err
 	}

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gorilla/mux"
 	"github.com/somos831/somos-backend/models"
 	"github.com/somos831/somos-backend/responses"
 )
@@ -49,7 +50,8 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 // Retrieve User: Endpoint for retrieving user information.
 func (s *Server) GetUserByID(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
+	params := mux.Vars(r)
+	id := params["id"]
 
 	userID, err := strconv.Atoi(id)
 	if err != nil {
@@ -76,8 +78,8 @@ func (s *Server) GetUserByID(w http.ResponseWriter, r *http.Request) {
 
 // UpdateUser: Endpoint for updating user information.
 func (s *Server) UpdateUser(w http.ResponseWriter, r *http.Request) {
-
-	id := r.PathValue("id")
+	params := mux.Vars(r)
+	id := params["id"]
 
 	userID, err := strconv.Atoi(id)
 	if err != nil {
@@ -118,7 +120,8 @@ func (s *Server) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 // Delete User: Endpoint for deleting a user account.
 func (s *Server) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
+	params := mux.Vars(r)
+	id := params["id"]
 
 	userID, err := strconv.Atoi(id)
 	if err != nil {

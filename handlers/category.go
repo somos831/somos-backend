@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gorilla/mux"
 	"github.com/somos831/somos-backend/errors/httperror"
 	"github.com/somos831/somos-backend/models"
 )
@@ -49,7 +50,8 @@ func (s *Server) ListAllCategories(w http.ResponseWriter, r *http.Request) error
 // GetCategory returns a single category by its id.
 func (s *Server) GetCategory(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Content-Type", "application/json")
-	id := r.PathValue("id")
+	params := mux.Vars(r)
+	id := params["id"]
 	category, err := s.CategoryById(id)
 	if err != nil {
 		return err
@@ -96,7 +98,8 @@ func (s *Server) CreateCategory(w http.ResponseWriter, r *http.Request) error {
 // UpdateCategory updates a category by its id.
 func (s *Server) UpdateCategory(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Content-Type", "application/json")
-	id := r.PathValue("id")
+	params := mux.Vars(r)
+	id := params["id"]
 	category, err := s.CategoryById(id)
 	if err != nil {
 		return err
@@ -130,7 +133,8 @@ func (s *Server) UpdateCategory(w http.ResponseWriter, r *http.Request) error {
 // DeleteCategory deletes a category by its id.
 func (s *Server) DeleteCategory(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Content-Type", "application/json")
-	id := r.PathValue("id")
+	params := mux.Vars(r)
+	id := params["id"]
 	category, err := s.CategoryById(id)
 	if err != nil {
 		return err
