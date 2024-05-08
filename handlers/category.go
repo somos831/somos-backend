@@ -8,12 +8,13 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gorilla/mux"
 	"github.com/somos831/somos-backend/errors/httperror"
 	"github.com/somos831/somos-backend/models"
 )
 
 // ListAllCategories lists all the categories in the database.
-func (h *handler) ListAllCategories(w http.ResponseWriter, r *http.Request) error {
+func (s *Server) ListAllCategories(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Content-Type", "application/json")
 
 	var whereClause string
@@ -24,7 +25,7 @@ func (h *handler) ListAllCategories(w http.ResponseWriter, r *http.Request) erro
 	}
 
 	query := fmt.Sprintf("SELECT * FROM event_categories %s;", whereClause)
-	results, err := h.db.Query(query, whereArgs...)
+	results, err := s.db.Query(query, whereArgs...)
 	if err != nil {
 		return httperror.InternalServer(err)
 	}
@@ -47,10 +48,11 @@ func (h *handler) ListAllCategories(w http.ResponseWriter, r *http.Request) erro
 }
 
 // GetCategory returns a single category by its id.
-func (h *handler) GetCategory(w http.ResponseWriter, r *http.Request) error {
+func (s *Server) GetCategory(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Content-Type", "application/json")
-	id := r.PathValue("id")
-	category, err := h.CategoryById(id)
+	params := mux.Vars(r)
+	id := params["id"]
+	category, err := s.CategoryById(id)
 	if err != nil {
 		return err
 	}
@@ -62,7 +64,7 @@ func (h *handler) GetCategory(w http.ResponseWriter, r *http.Request) error {
 }
 
 // CreateCategory creates a new category using the form data.
-func (h *handler) CreateCategory(w http.ResponseWriter, r *http.Request) error {
+func (s *Server) CreateCategory(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Content-Type", "application/json")
 
 	if err := r.ParseForm(); err != nil {
@@ -73,7 +75,7 @@ func (h *handler) CreateCategory(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	result, err := h.db.Exec(`
+	result, err := s.db.Exec(`
 		INSERT INTO event_categories (name) VALUES (?);
 	`, category.Name)
 	if err != nil {
@@ -94,10 +96,11 @@ func (h *handler) CreateCategory(w http.ResponseWriter, r *http.Request) error {
 }
 
 // UpdateCategory updates a category by its id.
-func (h *handler) UpdateCategory(w http.ResponseWriter, r *http.Request) error {
+func (s *Server) UpdateCategory(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Content-Type", "application/json")
-	id := r.PathValue("id")
-	category, err := h.CategoryById(id)
+	params := mux.Vars(r)
+	id := params["id"]
+	category, err := s.CategoryById(id)
 	if err != nil {
 		return err
 	}
@@ -111,7 +114,7 @@ func (h *handler) UpdateCategory(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	query := `UPDATE event_categories SET name = ? WHERE id = ?;`
-	_, err = h.db.Exec(query, updatedCategory.Name, category.Id)
+	_, err = s.db.Exec(query, updatedCategory.Name, category.Id)
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
 		return httperror.NotFound(err)
@@ -128,16 +131,17 @@ func (h *handler) UpdateCategory(w http.ResponseWriter, r *http.Request) error {
 }
 
 // DeleteCategory deletes a category by its id.
-func (h *handler) DeleteCategory(w http.ResponseWriter, r *http.Request) error {
+func (s *Server) DeleteCategory(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Content-Type", "application/json")
-	id := r.PathValue("id")
-	category, err := h.CategoryById(id)
+	params := mux.Vars(r)
+	id := params["id"]
+	category, err := s.CategoryById(id)
 	if err != nil {
 		return err
 	}
 
 	query := `DELETE from event_categories WHERE id = ?;`
-	_, err = h.db.Exec(query, category.Id)
+	_, err = s.db.Exec(query, category.Id)
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
 		return httperror.NotFound(err)
@@ -151,7 +155,7 @@ func (h *handler) DeleteCategory(w http.ResponseWriter, r *http.Request) error {
 }
 
 // CategoryById returns a Category corresponding to the id, if it exists.
-func (h *handler) CategoryById(id string) (*models.Category, error) {
+func (s *Server) CategoryById(id string) (*models.Category, error) {
 	if len(id) == 0 {
 		return nil, httperror.BadRequest("name cannot be empty")
 	}
@@ -159,7 +163,7 @@ func (h *handler) CategoryById(id string) (*models.Category, error) {
 	if err != nil {
 		return nil, httperror.BadRequest("category id should be an integer")
 	}
-	result := h.db.QueryRow(`SELECT * FROM event_categories WHERE id = ?`, categoryId)
+	result := s.db.QueryRow(`SELECT * FROM event_categories WHERE id = ?`, categoryId)
 
 	var category models.Category
 	err = result.Scan(&category.Id, &category.Name)
