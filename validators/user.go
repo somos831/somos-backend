@@ -1,13 +1,14 @@
 package validators
 
 import (
+	"context"
 	"errors"
 	"regexp"
 
 	"github.com/somos831/somos-backend/models"
 )
 
-func (v *Validator) ValidateNewUser(newUser models.User) error {
+func (v *Validator) ValidateNewUser(ctx context.Context, newUser models.User) error {
 
 	if err := validateUserFields(newUser); err != nil {
 		return err
@@ -17,7 +18,7 @@ func (v *Validator) ValidateNewUser(newUser models.User) error {
 		return errors.New("Password is a required field")
 	}
 
-	newUsername, err := v.isUniqueUsername(newUser.Username)
+	newUsername, err := v.isUniqueUsername(ctx, newUser.Username)
 	if err != nil {
 		return err
 	}
@@ -26,7 +27,7 @@ func (v *Validator) ValidateNewUser(newUser models.User) error {
 		return errors.New("Username is already taken")
 	}
 
-	newAccount, err := v.isUniqueEmail(newUser.Email)
+	newAccount, err := v.isUniqueEmail(ctx, newUser.Email)
 	if err != nil {
 		return err
 	}
@@ -38,14 +39,14 @@ func (v *Validator) ValidateNewUser(newUser models.User) error {
 	return nil
 }
 
-func (v *Validator) ValidateUpdatedFields(user models.User) error {
+func (v *Validator) ValidateUpdatedFields(ctx context.Context, user models.User) error {
 
 	if err := validateUserFields(user); err != nil {
 		return err
 	}
 
 	// Get current values: email and username
-	userRec, err := models.FindUserByID(v.DB, user.ID)
+	userRec, err := models.FindUserByID(ctx, v.DB, user.ID)
 	if err != nil {
 		return err
 	}
@@ -56,7 +57,7 @@ func (v *Validator) ValidateUpdatedFields(user models.User) error {
 
 	// Email is being updated
 	if userRec.Email != user.Email {
-		newEmail, err := v.isUniqueEmail(user.Email)
+		newEmail, err := v.isUniqueEmail(ctx, user.Email)
 
 		if err != nil {
 			return err
@@ -69,7 +70,7 @@ func (v *Validator) ValidateUpdatedFields(user models.User) error {
 
 	// Username is being updated
 	if userRec.Username != user.Username {
-		uniqueUsername, err := v.isUniqueUsername(user.Username)
+		uniqueUsername, err := v.isUniqueUsername(ctx, user.Username)
 
 		if err != nil {
 			return err
@@ -80,7 +81,7 @@ func (v *Validator) ValidateUpdatedFields(user models.User) error {
 		}
 	}
 
-	err = models.UpdateUser(v.DB, &user)
+	err = models.UpdateUser(ctx, v.DB, &user)
 	if err != nil {
 		return err
 	}
@@ -113,9 +114,9 @@ func isValidEmail(email string) bool {
 	return regex.MatchString(email)
 }
 
-func (v *Validator) isUniqueUsername(username string) (bool, error) {
+func (v *Validator) isUniqueUsername(ctx context.Context, username string) (bool, error) {
 
-	exists, err := models.UserExistsByUsername(v.DB, username)
+	exists, err := models.UserExistsByUsername(ctx, v.DB, username)
 	if err != nil {
 		return false, errors.New("Unable to check username: " + err.Error())
 	}
@@ -123,9 +124,9 @@ func (v *Validator) isUniqueUsername(username string) (bool, error) {
 	return !exists, nil
 }
 
-func (v *Validator) isUniqueEmail(email string) (bool, error) {
+func (v *Validator) isUniqueEmail(ctx context.Context, email string) (bool, error) {
 
-	exists, err := models.UserExistsByEmail(v.DB, email)
+	exists, err := models.UserExistsByEmail(ctx, v.DB, email)
 	if err != nil {
 		return false, errors.New("Unable to check email: " + err.Error())
 	}

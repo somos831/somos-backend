@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"log"
@@ -20,9 +21,9 @@ type User struct {
 	RoleID         int    `json:"role_id"`
 }
 
-func FindUserByID(db *sql.DB, userID int) (*User, error) {
+func FindUserByID(ctx context.Context, db *sql.DB, userID int) (*User, error) {
 
-	row := db.QueryRow(`SELECT id, username, email, first_name, last_name, profile_picture, status_id, role_id FROM users WHERE id = ?`, userID)
+	row := db.QueryRowContext(ctx, `SELECT id, username, email, first_name, last_name, profile_picture, status_id, role_id FROM users WHERE id = ?`, userID)
 
 	var user User
 	err := row.Scan(
@@ -49,11 +50,11 @@ func FindUserByID(db *sql.DB, userID int) (*User, error) {
 }
 
 // TODO: will need to modify once we add authorization
-func InsertUser(db *sql.DB, user *User) (int, error) {
+func InsertUser(ctx context.Context, db *sql.DB, user *User) (int, error) {
 
 	query := "INSERT INTO users (username, email, password, first_name, last_name, profile_picture, status_id, role_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
 
-	result, err := db.Exec(query, user.Username, user.Email, user.Password, user.FirstName, user.LastName, user.ProfilePicture, user.StatusID, user.RoleID)
+	result, err := db.ExecContext(ctx, query, user.Username, user.Email, user.Password, user.FirstName, user.LastName, user.ProfilePicture, user.StatusID, user.RoleID)
 	if err != nil {
 		log.Printf("Failed to create user due to: %s\n", err.Error())
 
@@ -71,11 +72,11 @@ func InsertUser(db *sql.DB, user *User) (int, error) {
 	return int(userID), nil
 }
 
-func UpdateUser(db *sql.DB, user *User) error {
+func UpdateUser(ctx context.Context, db *sql.DB, user *User) error {
 
 	query := "UPDATE users SET username=?, email=?, first_name=?, last_name=?, profile_picture=?, status_id=?, role_id=?, updated_at = CURRENT_TIMESTAMP WHERE id=?"
 
-	_, err := db.Exec(query, user.Username, user.Email, user.FirstName, user.LastName, user.ProfilePicture, user.StatusID, user.RoleID, user.ID)
+	_, err := db.ExecContext(ctx, query, user.Username, user.Email, user.FirstName, user.LastName, user.ProfilePicture, user.StatusID, user.RoleID, user.ID)
 	if err != nil {
 		log.Printf("Failed to update user due to: %s", err.Error())
 
@@ -85,11 +86,11 @@ func UpdateUser(db *sql.DB, user *User) error {
 	return nil
 }
 
-func UserExistsByEmail(db *sql.DB, email string) (bool, error) {
+func UserExistsByEmail(ctx context.Context, db *sql.DB, email string) (bool, error) {
 
 	var count int
 	query := "SELECT COUNT(*) FROM users WHERE email = ?"
-	err := db.QueryRow(query, email).Scan(&count)
+	err := db.QueryRowContext(ctx, query, email).Scan(&count)
 	if err != nil {
 		return false, err
 	}
@@ -97,11 +98,11 @@ func UserExistsByEmail(db *sql.DB, email string) (bool, error) {
 	return count > 0, nil
 }
 
-func UserExistsByUsername(db *sql.DB, username string) (bool, error) {
+func UserExistsByUsername(ctx context.Context, db *sql.DB, username string) (bool, error) {
 
 	var count int
 	query := "SELECT COUNT(*) FROM users WHERE username = ?"
-	err := db.QueryRow(query, username).Scan(&count)
+	err := db.QueryRowContext(ctx, query, username).Scan(&count)
 	if err != nil {
 		return false, err
 	}
@@ -109,11 +110,12 @@ func UserExistsByUsername(db *sql.DB, username string) (bool, error) {
 	return count > 0, nil
 }
 
-func DeleteUser(db *sql.DB, userID int) error {
+func DeleteUser(ctx context.Context, db *sql.DB, userID int) error {
 
-	_, err := db.Exec("DELETE FROM users WHERE ID = ?", userID)
+	_, err := db.ExecContext(ctx, "DELETE FROM users WHERE ID = ?", userID)
 	if err != nil {
 		log.Printf("Failed to delete user due to: %s\n", err.Error())
+
 		return err
 	}
 

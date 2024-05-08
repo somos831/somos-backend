@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	conn "github.com/somos831/somos-backend/db"
 	"github.com/somos831/somos-backend/validators"
@@ -15,7 +16,7 @@ import (
 
 type Server struct {
 	db        *sql.DB
-	Router    *http.ServeMux
+	Router    *mux.Router
 	Validator validators.Validator
 }
 
@@ -35,7 +36,8 @@ func (server *Server) InitServer() {
 	server.db = db
 
 	// Initialize new router:
-	server.Router = http.NewServeMux()
+	server.Router = mux.NewRouter()
+	server.Router.Use(ContextMiddleware)
 
 	// Initialize routes:
 	server.InitRoutes()

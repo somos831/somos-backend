@@ -23,19 +23,22 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		responses.Error(w, http.StatusBadRequest, errors.New("Failed to decode request body"))
+
 		return
 	}
 
-	err = s.Validator.ValidateNewUser(newUser)
+	err = s.Validator.ValidateNewUser(r.Context(), newUser)
 	if err != nil {
 		responses.Error(w, http.StatusBadRequest, err)
+
 		return
 	}
 
 	// Insert the new user into the database
-	userID, err := models.InsertUser(s.db, &newUser)
+	userID, err := models.InsertUser(r.Context(), s.db, &newUser)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, errors.New("Failed to create user"))
+
 		return
 	}
 
@@ -51,10 +54,11 @@ func (s *Server) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	userID, err := strconv.Atoi(id)
 	if err != nil {
 		responses.Error(w, http.StatusBadRequest, errors.New("User ID must be an integer value"))
+
 		return
 	}
 
-	foundUser, err := models.FindUserByID(s.db, userID)
+	foundUser, err := models.FindUserByID(r.Context(), s.db, userID)
 
 	if errors.Is(err, UserNotFoundErr) {
 		responses.Error(w, http.StatusNotFound, errors.New("User with given ID does not exist"))
@@ -90,7 +94,7 @@ func (s *Server) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = s.Validator.ValidateUpdatedFields(user)
+	err = s.Validator.ValidateUpdatedFields(r.Context(), user)
 	if errors.Is(err, UserNotFoundErr) {
 		responses.Error(w, http.StatusNotFound, errors.New("User with given ID does not exist"))
 
@@ -102,7 +106,7 @@ func (s *Server) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = models.UpdateUser(s.db, &user)
+	err = models.UpdateUser(r.Context(), s.db, &user)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, errors.New("Failed to update user"))
 
@@ -122,7 +126,7 @@ func (s *Server) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := models.FindUserByID(s.db, userID)
+	user, err := models.FindUserByID(r.Context(), s.db, userID)
 
 	if errors.Is(err, UserNotFoundErr) {
 		responses.Error(w, http.StatusNotFound, errors.New("User with given ID was not found"))
@@ -133,7 +137,7 @@ func (s *Server) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = models.DeleteUser(s.db, user.ID)
+	err = models.DeleteUser(r.Context(), s.db, user.ID)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, errors.New("Failed to delete user"))
 	}
