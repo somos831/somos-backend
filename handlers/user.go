@@ -24,14 +24,12 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		responses.Error(w, http.StatusBadRequest, errors.New("Failed to decode request body"))
-
 		return
 	}
 
 	err = s.Validator.ValidateNewUser(r.Context(), newUser)
 	if err != nil {
 		responses.Error(w, http.StatusBadRequest, err)
-
 		return
 	}
 
@@ -39,7 +37,6 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 	userID, err := models.InsertUser(r.Context(), s.db, &newUser)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, errors.New("Failed to create user"))
-
 		return
 	}
 
@@ -56,7 +53,6 @@ func (s *Server) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	userID, err := strconv.Atoi(id)
 	if err != nil {
 		responses.Error(w, http.StatusBadRequest, errors.New("User ID must be an integer value"))
-
 		return
 	}
 
@@ -64,12 +60,10 @@ func (s *Server) GetUserByID(w http.ResponseWriter, r *http.Request) {
 
 	if errors.Is(err, UserNotFoundErr) {
 		responses.Error(w, http.StatusNotFound, errors.New("User with given ID does not exist"))
-
 		return
 	}
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, errors.New("Failed to get user"))
-
 		return
 	}
 
@@ -99,19 +93,16 @@ func (s *Server) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	err = s.Validator.ValidateUpdatedFields(r.Context(), user)
 	if errors.Is(err, UserNotFoundErr) {
 		responses.Error(w, http.StatusNotFound, errors.New("User with given ID does not exist"))
-
 		return
 	}
 	if err != nil {
 		responses.Error(w, http.StatusBadRequest, err)
-
 		return
 	}
 
 	err = models.UpdateUser(r.Context(), s.db, &user)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, errors.New("Failed to update user"))
-
 		return
 	}
 
@@ -143,6 +134,7 @@ func (s *Server) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	err = models.DeleteUser(r.Context(), s.db, user.ID)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, errors.New("Failed to delete user"))
+		return
 	}
 
 	responses.Json(w, http.StatusNoContent, nil)

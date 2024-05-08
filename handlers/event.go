@@ -137,7 +137,8 @@ func (h *Server) CreateEvent(w http.ResponseWriter, r *http.Request) error {
 func (h *Server) UpdateEvent(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Content-Type", "application/json")
 	params := mux.Vars(r)
-	event, err := h.eventById(params["id"])
+	id := params["id"]
+	event, err := h.eventById(id)
 	if err != nil {
 		return err
 	}
@@ -195,8 +196,8 @@ func (h *Server) UpdateEvent(w http.ResponseWriter, r *http.Request) error {
 func (h *Server) DeleteEvent(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Content-Type", "application/json")
 	params := mux.Vars(r)
-
-	event, err := h.eventById(params["id"])
+	id := params["id"]
+	event, err := h.eventById(id)
 	if err != nil {
 		return err
 	}
