@@ -106,6 +106,10 @@ func InsertEvent(ctx context.Context, db *sql.DB, event Event) (int, error) {
 
 // UpdateEvent updates an event in db.
 func UpdateEvent(ctx context.Context, db *sql.DB, event Event) error {
+	if _, err := FindEventById(ctx, db, event.Id); err != nil {
+		return err
+	}
+
 	query := `
 		UPDATE events SET
 			title = ?,
@@ -142,25 +146,12 @@ func UpdateEvent(ctx context.Context, db *sql.DB, event Event) error {
 	return nil
 }
 
-// EventExistsById checks if an event is in db using eventId.
-func EventExistsById(ctx context.Context, db *sql.DB, eventId int) (bool, error) {
-	var count int
-	query := `SELECT COUNT(*) FROM events WHERE id = ?`
-	err := db.QueryRowContext(ctx, query, eventId).Scan(&count)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return false, nil
-		}
-		log.Printf("failed to locate event by id: %s\nid: %d\n", err, eventId)
-
-		return false, err
-	}
-
-	return count > 0, nil
-}
-
 // DeleteEvent deletes an event using eventId.
 func DeleteEvent(ctx context.Context, db *sql.DB, eventId int) error {
+	if _, err := FindEventById(ctx, db, eventId); err != nil {
+		return err
+	}
+
 	query := `DELETE FROM events WHERE id = ?`
 	_, err := db.ExecContext(ctx, query, eventId)
 	if err != nil {

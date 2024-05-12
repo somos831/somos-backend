@@ -123,16 +123,6 @@ func (s *Server) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	exists, err := models.EventExistsById(r.Context(), s.db, eventId)
-	if err != nil {
-		responses.Error(w, http.StatusInternalServerError, err)
-		return
-	}
-	if !exists {
-		responses.Error(w, http.StatusNotFound, models.ErrEventNotFound)
-		return
-	}
-
 	err = models.DeleteEvent(r.Context(), s.db, eventId)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err)
