@@ -27,12 +27,7 @@ func (server *Server) InitServer() {
 		log.Fatal(err)
 	}
 
-	// Connect to the database:
-	dbUser := os.Getenv("DB_USER")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-
-	db := conn.Connect(dbUser, dbPassword, dbName)
+	db := conn.Connect()
 	server.db = db
 
 	// Initialize new router:
