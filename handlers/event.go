@@ -75,27 +75,27 @@ func (s *Server) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var event models.Event
-	err = json.NewDecoder(r.Body).Decode(&event)
+	var oldEvent models.Event
+	err = json.NewDecoder(r.Body).Decode(&oldEvent)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	event.Id = eventId
+	oldEvent.Id = eventId
 
-	err = s.Validator.ValidateNewEvent(r.Context(), event)
+	err = s.Validator.ValidateNewEvent(r.Context(), oldEvent)
 	if err != nil {
 		responses.Error(w, http.StatusBadRequest, err)
 		return
 	}
 
-	err = models.UpdateEvent(r.Context(), s.db, event)
+	updatedEvent, err := models.UpdateEvent(r.Context(), s.db, oldEvent)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	responses.Json(w, http.StatusOK, event)
+	responses.Json(w, http.StatusOK, updatedEvent)
 }
 
 // DeleteEvent deletes an event by its id.

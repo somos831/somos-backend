@@ -103,9 +103,9 @@ func InsertEvent(ctx context.Context, db *sql.DB, event Event) (int, error) {
 }
 
 // UpdateEvent updates an event in db.
-func UpdateEvent(ctx context.Context, db *sql.DB, event Event) error {
+func UpdateEvent(ctx context.Context, db *sql.DB, event Event) (*Event, error) {
 	if _, err := FindEventById(ctx, db, event.Id); err != nil {
-		return err
+		return nil, err
 	}
 
 	query := `
@@ -138,10 +138,16 @@ func UpdateEvent(ctx context.Context, db *sql.DB, event Event) error {
 
 	if err != nil {
 		log.Printf("failed to update event: %s\n", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	query = `SELECT created_at, updated_at FROM events WHERE id = ?`
+	row := db.QueryRowContext(ctx, query, event.Id)
+	if err := row.Scan(&event.CreatedAt, &event.UpdatedAt); err != nil {
+		return nil, err
+	}
+
+	return &event, nil
 }
 
 // DeleteEvent deletes an event using eventId.
