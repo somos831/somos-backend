@@ -1,8 +1,8 @@
 package handlers
 
 import (
+	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -37,26 +37,20 @@ func (s *Server) GetEvent(w http.ResponseWriter, r *http.Request) {
 
 // CreateEvent creates a new event using the form data.
 func (s *Server) CreateEvent(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
+	var newEvent models.Event
+	err := json.NewDecoder(r.Body).Decode(&newEvent)
+	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err)
-		log.Printf("failed to parse form: %s\n", err)
-
 		return
 	}
 
-	newEvent, err := models.NewEventFromFormValues(r.Form)
+	err = s.Validator.ValidateNewEvent(r.Context(), newEvent)
 	if err != nil {
 		responses.Error(w, http.StatusBadRequest, err)
 		return
 	}
 
-	err = s.Validator.ValidateNewEvent(r.Context(), *newEvent)
-	if err != nil {
-		responses.Error(w, http.StatusBadRequest, err)
-		return
-	}
-
-	eventId, err := models.InsertEvent(r.Context(), s.db, *newEvent)
+	eventId, err := models.InsertEvent(r.Context(), s.db, newEvent)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err)
 		return
@@ -81,27 +75,21 @@ func (s *Server) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := r.ParseForm(); err != nil {
-		responses.Error(w, http.StatusInternalServerError, err)
-		log.Printf("failed to parse form: %s\n", err)
-
-		return
-	}
-
-	event, err := models.NewEventFromFormValues(r.Form)
+	var event models.Event
+	err = json.NewDecoder(r.Body).Decode(&event)
 	if err != nil {
-		responses.Error(w, http.StatusBadRequest, err)
+		responses.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 	event.Id = eventId
 
-	err = s.Validator.ValidateNewEvent(r.Context(), *event)
+	err = s.Validator.ValidateNewEvent(r.Context(), event)
 	if err != nil {
 		responses.Error(w, http.StatusBadRequest, err)
 		return
 	}
 
-	err = models.UpdateEvent(r.Context(), s.db, *event)
+	err = models.UpdateEvent(r.Context(), s.db, event)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err)
 		return

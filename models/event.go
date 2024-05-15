@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"log"
-	"net/url"
-	"strconv"
 )
 
 var ErrEventNotFound = errors.New("event not found")
@@ -160,57 +158,4 @@ func DeleteEvent(ctx context.Context, db *sql.DB, eventId int) error {
 	}
 
 	return nil
-}
-
-// NewEventFromFormValues creates a new Event from values.
-func NewEventFromFormValues(values url.Values) (*Event, error) {
-	var newEvent Event
-
-	if values.Has("organization_id") {
-		organizationId, err := strconv.Atoi(values.Get("organization_id"))
-		if err != nil {
-			return nil, errors.Join(errors.New("organization_id should be a number"), err)
-		}
-		newEvent.OrganizationId = &organizationId
-	}
-
-	if values.Has("image_id") {
-		imageId, err := strconv.Atoi(values.Get("image_id"))
-		if err != nil {
-			return nil, errors.Join(errors.New("imgae_id should be a number"), err)
-		}
-		newEvent.ImageId = &imageId
-	}
-
-	if values.Has("location_id") {
-		locationId, err := strconv.Atoi(values.Get("location_id"))
-		if err != nil {
-			return nil, errors.Join(errors.New("location_id should be a number"), err)
-		}
-		newEvent.LocationId = &locationId
-	}
-
-	if values.Has("price") {
-		price, err := strconv.ParseFloat(values.Get("price"), 32)
-		if err != nil {
-			return nil, errors.Join(errors.New("price should be a number"), err)
-		}
-		newEvent.Price = float32(price)
-	}
-
-	if values.Has("category_id") {
-		categoryId, err := strconv.Atoi(values.Get("category_id"))
-		if err != nil {
-			return nil, errors.Join(errors.New("category_id should be a number"), err)
-		}
-		newEvent.CategoryId = categoryId
-	}
-
-	newEvent.Title = values.Get("title")
-	newEvent.Description = intoPtr(values.Get("description"))
-	newEvent.LocationDetails = intoPtr(values.Get("location_details"))
-	newEvent.AdditionalInfo = intoPtr(values.Get("additional_info"))
-	newEvent.AdditionalUrl = intoPtr(values.Get("additional_url"))
-
-	return &newEvent, nil
 }
