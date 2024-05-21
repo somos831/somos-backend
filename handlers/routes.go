@@ -8,7 +8,7 @@ func (s *Server) InitRoutes() {
 
 	s.Router.HandleFunc("/categories", s.ListAllCategories).Methods("GET")
 	s.Router.HandleFunc("/categories/{id}", s.GetCategory).Methods("GET")
-	s.Router.HandleFunc("/categories", s.CreateCategory).Methods("PATCH")
+	s.Router.HandleFunc("/categories", s.CreateCategory).Methods("POST")
 	s.Router.HandleFunc("/categories/{id}", s.UpdateCategory).Methods("PATCH")
 	s.Router.HandleFunc("/categories/{id}", s.DeleteCategory).Methods("DELETE")
 
