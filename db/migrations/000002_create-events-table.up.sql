@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS events (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
     description VARCHAR(1500),
+    date TIMESTAMP NOT NULL,
     organization_id INT,
     image_id INT,
     location_id INT,
