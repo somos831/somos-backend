@@ -1,273 +1,146 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/gorilla/mux"
-	"github.com/somos831/somos-backend/errors/httperror"
 	"github.com/somos831/somos-backend/models"
+	"github.com/somos831/somos-backend/responses"
 )
 
-type eventQueryParams struct {
-	name        string
-	description string
-	location    string
-	category    string
-}
+var errNonNumericEventId = errors.New("event id must be an integer")
 
-// ListAllEvents lists all the events in the database.
-func (h *Server) ListAllEvents(w http.ResponseWriter, r *http.Request) error {
-	w.Header().Add("Content-Type", "application/json")
+func (s *Server) ListEvents(w http.ResponseWriter, r *http.Request) {
+	nStr := r.URL.Query().Get("limit")
+	limit := 15
 
-	query := r.URL.Query()
-	params := eventQueryParams{
-		name:        query.Get("name"),
-		description: query.Get("description"),
-		location:    query.Get("location"),
-		category:    query.Get("category"),
-	}
-	whereClause, whereArgs := buildWhereClause(params)
-
-	results, err := h.db.Query(fmt.Sprintf(`
-		SELECT events.id, events.name, events.description, events.location,
-			categories.id as category_id, categories.name as category_name
-		FROM events INNER JOIN event_categories AS categories
-		ON events.category_id = categories.id
-		%s;`, whereClause), whereArgs...)
-	if err != nil {
-		return httperror.InternalServer(err)
-	}
-
-	events := []models.Event{}
-	for results.Next() {
-		var event models.Event
-		err = results.Scan(&event.Id, &event.Name, &event.Description,
-			&event.Location, &event.Category.Id, &event.Category.Name)
+	if nStr != "" {
+		n, err := strconv.Atoi(nStr)
 		if err != nil {
-			return httperror.InternalServer(err)
+			err = errors.Join(errNonNumericEventId, err)
+			responses.Error(w, http.StatusBadRequest, err)
+
+			return
 		}
-		events = append(events, event)
+
+		limit = n
 	}
 
-	if err = json.NewEncoder(w).Encode(events); err != nil {
-		return httperror.InternalServer(err)
+	events, err := models.FindNRecentEvents(r.Context(), s.db, limit)
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err)
+		return
 	}
 
-	return nil
+	responses.Json(w, http.StatusOK, events)
 }
 
 // GetEvent returns a single event by its id.
-func (h *Server) GetEvent(w http.ResponseWriter, r *http.Request) error {
-	w.Header().Add("Content-Type", "application/json")
+func (s *Server) GetEvent(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	id := params["id"]
-	event, err := h.eventById(id)
+	eventIdStr := params["id"]
+
+	eventId, err := strconv.Atoi(eventIdStr)
 	if err != nil {
-		return err
-	}
-	if err = json.NewEncoder(w).Encode(event); err != nil {
-		return httperror.InternalServer(err)
+		err = errors.Join(errNonNumericEventId, err)
+		responses.Error(w, http.StatusBadRequest, err)
+
+		return
 	}
 
-	return nil
+	event, err := models.FindEventById(r.Context(), s.db, eventId)
+	if err != nil {
+		responses.Error(w, http.StatusNotFound, err)
+		return
+	}
+
+	responses.Json(w, http.StatusOK, event)
 }
 
 // CreateEvent creates a new event using the form data.
-func (h *Server) CreateEvent(w http.ResponseWriter, r *http.Request) error {
-	w.Header().Add("Content-Type", "application/json")
-
-	if err := r.ParseForm(); err != nil {
-		return httperror.InternalServer(err)
-	}
-
-	var description *string
-	if r.Form.Has("description") {
-		desc := r.Form.Get("description")
-		description = &desc
-	}
-	var location *string
-	if r.Form.Has("location") {
-		loc := r.Form.Get("location")
-		location = &loc
-	}
-	event := models.Event{
-		Name:        r.Form.Get("name"),
-		Description: description,
-		Location:    location,
-	}
-	if err := event.Validate(); err != nil {
-		return err
-	}
-
-	category, err := h.CategoryById(r.Form.Get("categoryId"))
+func (s *Server) CreateEvent(w http.ResponseWriter, r *http.Request) {
+	var newEvent models.Event
+	err := json.NewDecoder(r.Body).Decode(&newEvent)
 	if err != nil {
-		return err
+		responses.Error(w, http.StatusInternalServerError, err)
+		return
 	}
-	event.Category = *category
 
-	result, err := h.db.Exec(`
-		INSERT INTO events (name, description, category_id, location)
-		VALUES (?, ?, ?, ?);
-	`, event.Name, event.Description, event.Category.Id, event.Location)
+	err = s.Validator.ValidateNewEvent(r.Context(), newEvent)
 	if err != nil {
-		return httperror.InternalServer(err)
+		responses.Error(w, http.StatusBadRequest, err)
+		return
 	}
 
-	eventId, err := result.LastInsertId()
+	eventId, err := models.InsertEvent(r.Context(), s.db, newEvent)
 	if err != nil {
-		return httperror.InternalServer(err)
-	}
-	event.Id = int(eventId)
-
-	w.WriteHeader(http.StatusCreated)
-	if err = json.NewEncoder(w).Encode(event); err != nil {
-		return httperror.InternalServer(err)
+		responses.Error(w, http.StatusInternalServerError, err)
+		return
 	}
 
-	return nil
+	res := map[string]interface{}{
+		"id": eventId,
+	}
+	responses.Json(w, http.StatusCreated, res)
 }
 
 // UpdateEvent updates an event by its id.
-func (h *Server) UpdateEvent(w http.ResponseWriter, r *http.Request) error {
-	w.Header().Add("Content-Type", "application/json")
+func (s *Server) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	id := params["id"]
-	event, err := h.eventById(id)
+	eventIdStr := params["id"]
+
+	eventId, err := strconv.Atoi(eventIdStr)
 	if err != nil {
-		return err
+		err = errors.Join(errNonNumericEventId, err)
+		responses.Error(w, http.StatusBadRequest, err)
+
+		return
 	}
 
-	if err = r.ParseForm(); err != nil {
-		return httperror.InternalServer(err)
-	}
-	if r.Form.Has("name") {
-		event.Name = r.Form.Get("name")
-	}
-	if r.Form.Has("description") {
-		desc := r.Form.Get("description")
-		if desc == "" {
-			event.Description = nil
-		} else {
-			event.Description = &desc
-		}
-	}
-	if r.Form.Has("location") {
-		loc := r.Form.Get("location")
-		if loc == "" {
-			event.Location = nil
-		} else {
-			event.Location = &loc
-		}
-	}
-	if err := event.Validate(); err != nil {
-		return err
-	}
-
-	if r.Form.Has("categoryId") {
-		category, err := h.CategoryById(r.Form.Get("categoryId"))
-		if err != nil {
-			return err
-		}
-		event.Category = *category
-	}
-
-	_, err = h.db.Exec(`
-		UPDATE events SET name = ?, description = ?, category_id = ?, location = ?
-		WHERE id = ?;
-	`, event.Name, event.Description, event.Category.Id, event.Location, event.Id)
+	var event models.Event
+	err = json.NewDecoder(r.Body).Decode(&event)
 	if err != nil {
-		return httperror.InternalServer(err)
+		responses.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+	event.Id = eventId
+
+	err = s.Validator.ValidateNewEvent(r.Context(), event)
+	if err != nil {
+		responses.Error(w, http.StatusBadRequest, err)
+		return
 	}
 
-	if err = json.NewEncoder(w).Encode(event); err != nil {
-		return httperror.InternalServer(err)
+	err = models.UpdateEvent(r.Context(), s.db, &event)
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err)
+		return
 	}
 
-	return nil
+	responses.Json(w, http.StatusOK, event)
 }
 
 // DeleteEvent deletes an event by its id.
-func (h *Server) DeleteEvent(w http.ResponseWriter, r *http.Request) error {
-	w.Header().Add("Content-Type", "application/json")
+func (s *Server) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	id := params["id"]
-	event, err := h.eventById(id)
+	eventIdStr := params["id"]
+
+	eventId, err := strconv.Atoi(eventIdStr)
 	if err != nil {
-		return err
+		err = errors.Join(errNonNumericEventId, err)
+		responses.Error(w, http.StatusBadRequest, err)
+
+		return
 	}
 
-	_, err = h.db.Exec(`DELETE from events WHERE id = ?;`, event.Id)
+	err = models.DeleteEvent(r.Context(), s.db, eventId)
 	if err != nil {
-		return httperror.InternalServer(err)
+		responses.Error(w, http.StatusInternalServerError, err)
+		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
-
-	return nil
-}
-
-func buildWhereClause(params eventQueryParams) (string, []interface{}) {
-	var whereClauseBuilder strings.Builder
-	var whereArgs []interface{}
-
-	if params.name != "" {
-		whereClauseBuilder.WriteString("events.name LIKE ? AND ")
-		whereArgs = append(whereArgs, "%"+params.name+"%")
-	}
-	if params.description != "" {
-		whereClauseBuilder.WriteString("events.description LIKE ? AND ")
-		whereArgs = append(whereArgs, "%"+params.description+"%")
-	}
-	if params.location != "" {
-		whereClauseBuilder.WriteString("events.location LIKE ? AND ")
-		whereArgs = append(whereArgs, "%"+params.location+"%")
-	}
-	if params.category != "" {
-		category := params.category
-		if categoryId, err := strconv.Atoi(category); err != nil {
-			whereClauseBuilder.WriteString("categories.name LIKE ? AND ")
-			whereArgs = append(whereArgs, "%"+category+"%")
-		} else {
-			whereClauseBuilder.WriteString("categories.id = ? AND ")
-			whereArgs = append(whereArgs, categoryId)
-		}
-	}
-	whereClause := strings.TrimSuffix(whereClauseBuilder.String(), " AND ")
-	if len(whereClause) != 0 {
-		whereClause = "WHERE " + whereClause
-	}
-
-	return whereClause, whereArgs
-}
-
-func (h *Server) eventById(id string) (*models.Event, error) {
-	eventId, err := strconv.Atoi(id)
-	if err != nil {
-		return nil, httperror.BadRequest("id should be an integer")
-	}
-	result := h.db.QueryRow(`
-		SELECT events.id, events.name, events.description, events.location,
-			categories.id as category_id, categories.name as category_name
-		FROM events INNER JOIN event_categories AS categories
-		ON events.category_id = categories.id
-		WHERE events.id = ?;
-		`, eventId)
-
-	var event models.Event
-	err = result.Scan(&event.Id, &event.Name, &event.Description, &event.Location,
-		&event.Category.Id, &event.Category.Name)
-	switch {
-	case errors.Is(err, sql.ErrNoRows):
-		return nil, httperror.NotFound(err)
-	case err != nil:
-		return nil, httperror.InternalServer(err)
-	}
-
-	return &event, nil
+	responses.Json(w, http.StatusNoContent, nil)
 }
