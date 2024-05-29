@@ -22,6 +22,7 @@ func (s *Server) ListEvents(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			err = errors.Join(errNonNumericEventId, err)
 			responses.Error(w, http.StatusBadRequest, err)
+
 			return
 		}
 
