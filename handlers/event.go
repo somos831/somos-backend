@@ -13,6 +13,30 @@ import (
 
 var errNonNumericEventId = errors.New("event id must be an integer")
 
+func (s *Server) ListEvents(w http.ResponseWriter, r *http.Request) {
+	nStr := r.URL.Query().Get("limit")
+	limit := 15
+
+	if nStr != "" {
+		n, err := strconv.Atoi(nStr)
+		if err != nil {
+			err = errors.Join(errNonNumericEventId, err)
+			responses.Error(w, http.StatusBadRequest, err)
+			return
+		}
+
+		limit = n
+	}
+
+	events, err := models.FindNRecentEvents(r.Context(), s.db, limit)
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	responses.Json(w, http.StatusOK, events)
+}
+
 // GetEvent returns a single event by its id.
 func (s *Server) GetEvent(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
@@ -75,27 +99,27 @@ func (s *Server) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var oldEvent models.Event
-	err = json.NewDecoder(r.Body).Decode(&oldEvent)
+	var event models.Event
+	err = json.NewDecoder(r.Body).Decode(&event)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	oldEvent.Id = eventId
+	event.Id = eventId
 
-	err = s.Validator.ValidateNewEvent(r.Context(), oldEvent)
+	err = s.Validator.ValidateNewEvent(r.Context(), event)
 	if err != nil {
 		responses.Error(w, http.StatusBadRequest, err)
 		return
 	}
 
-	updatedEvent, err := models.UpdateEvent(r.Context(), s.db, oldEvent)
+	err = models.UpdateEvent(r.Context(), s.db, &event)
 	if err != nil {
 		responses.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	responses.Json(w, http.StatusOK, updatedEvent)
+	responses.Json(w, http.StatusOK, event)
 }
 
 // DeleteEvent deletes an event by its id.

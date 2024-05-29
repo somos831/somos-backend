@@ -1,6 +1,7 @@
 package handlers
 
 func (s *Server) InitRoutes() {
+	s.Router.HandleFunc("/events", s.ListEvents).Methods("GET")
 	s.Router.HandleFunc("/events/{id}", s.GetEvent).Methods("GET")
 	s.Router.HandleFunc("/events", s.CreateEvent).Methods("POST")
 	s.Router.HandleFunc("/events/{id}", s.UpdateEvent).Methods("PATCH")
