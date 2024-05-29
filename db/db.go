@@ -21,8 +21,7 @@ func Connect() *sql.DB {
 	)
 	db, err := sql.Open("mysql", addr)
 	if err != nil {
-		connInfo := fmt.Sprintf("using connection mysql://%s\n", addr)
-		log.Fatalf("connection failed: %s\n%s", err, connInfo)
+		log.Fatalf("connection failed: %s\n", err)
 	}
 
 	err = db.Ping()
