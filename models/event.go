@@ -26,6 +26,7 @@ type Event struct {
 	CreatedAt       string  `json:"created_at"`
 	UpdatedAt       string  `json:"updated_at"`
 	IsVisible       bool    `json:"is_visible"`
+	ContactInfo     string  `json:"contact_info"`
 }
 
 // FindNRecentEvents finds the n most recent events in db and orders them from
@@ -57,6 +58,7 @@ func FindNRecentEvents(ctx context.Context, db *sql.DB, n int) ([]Event, error) 
 			&event.CreatedAt,
 			&event.UpdatedAt,
 			&event.IsVisible,
+			&event.ContactInfo,
 		)
 
 		if err != nil {
@@ -92,6 +94,7 @@ func FindEventById(ctx context.Context, db *sql.DB, eventId int) (*Event, error)
 		&event.CreatedAt,
 		&event.UpdatedAt,
 		&event.IsVisible,
+		&event.ContactInfo,
 	)
 
 	if err != nil {
@@ -121,8 +124,9 @@ func InsertEvent(ctx context.Context, db *sql.DB, event Event) (int, error) {
 			price,
 			category_id,
 			additional_info,
-			additional_url
-		) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
+			additional_url,
+			contact_info
+		) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
 	`
 	result, err := db.ExecContext(ctx, query,
 		event.Title,
@@ -137,6 +141,7 @@ func InsertEvent(ctx context.Context, db *sql.DB, event Event) (int, error) {
 		event.CategoryId,
 		event.AdditionalInfo,
 		event.AdditionalUrl,
+		event.ContactInfo,
 	)
 
 	if err != nil {
@@ -173,6 +178,7 @@ func UpdateEvent(ctx context.Context, db *sql.DB, event *Event) error {
 			category_id = ?,
 			additional_info = ?,
 			additional_url = ?,
+			contact_info = ?,
 			updated_at = CURRENT_TIMESTAMP
 		WHERE id = ?
 	`
@@ -189,6 +195,7 @@ func UpdateEvent(ctx context.Context, db *sql.DB, event *Event) error {
 		event.CategoryId,
 		event.AdditionalInfo,
 		event.AdditionalUrl,
+		event.ContactInfo,
 		event.Id,
 	)
 

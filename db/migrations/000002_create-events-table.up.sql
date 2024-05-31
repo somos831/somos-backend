@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS events (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     is_visible TINYINT(1) DEFAULT 0,
+    contact_info VARCHAR(40),
     FOREIGN KEY (organization_id) REFERENCES organizations(id),
     FOREIGN KEY (image_id) REFERENCES images(id),
     FOREIGN KEY (location_id) REFERENCES locations(id),
