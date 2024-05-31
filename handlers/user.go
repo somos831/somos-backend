@@ -23,7 +23,7 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&newUser)
 
 	if err != nil {
-		responses.Error(w, http.StatusBadRequest, errors.New("Failed to decode request body"))
+		responses.Error(w, http.StatusBadRequest, errors.New("failed to decode request body"))
 		return
 	}
 
@@ -36,7 +36,7 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 	// Insert the new user into the database
 	userID, err := models.InsertUser(r.Context(), s.db, &newUser)
 	if err != nil {
-		responses.Error(w, http.StatusInternalServerError, errors.New("Failed to create user"))
+		responses.Error(w, http.StatusInternalServerError, errors.New("failed to create user"))
 		return
 	}
 
@@ -52,18 +52,18 @@ func (s *Server) GetUserByID(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := strconv.Atoi(id)
 	if err != nil {
-		responses.Error(w, http.StatusBadRequest, errors.New("User ID must be an integer value"))
+		responses.Error(w, http.StatusBadRequest, errors.New("user ID must be an integer value"))
 		return
 	}
 
 	foundUser, err := models.FindUserByID(r.Context(), s.db, userID)
 
 	if errors.Is(err, UserNotFoundErr) {
-		responses.Error(w, http.StatusNotFound, errors.New("User with given ID does not exist"))
+		responses.Error(w, http.StatusNotFound, errors.New("user with given ID does not exist"))
 		return
 	}
 	if err != nil {
-		responses.Error(w, http.StatusInternalServerError, errors.New("Failed to get user"))
+		responses.Error(w, http.StatusInternalServerError, errors.New("failed to get user"))
 		return
 	}
 
@@ -77,7 +77,7 @@ func (s *Server) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := strconv.Atoi(id)
 	if err != nil {
-		responses.Error(w, http.StatusBadRequest, errors.New("User ID must be an integer value"))
+		responses.Error(w, http.StatusBadRequest, errors.New("user ID must be an integer value"))
 		return
 	}
 
@@ -86,13 +86,13 @@ func (s *Server) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	user.ID = userID
 
 	if err != nil {
-		responses.Error(w, http.StatusBadRequest, errors.New("Failed to decode request body"))
+		responses.Error(w, http.StatusBadRequest, errors.New("failed to decode request body"))
 		return
 	}
 
 	err = s.Validator.ValidateUpdatedFields(r.Context(), user)
 	if errors.Is(err, UserNotFoundErr) {
-		responses.Error(w, http.StatusNotFound, errors.New("User with given ID does not exist"))
+		responses.Error(w, http.StatusNotFound, errors.New("user with given ID does not exist"))
 		return
 	}
 	if err != nil {
@@ -102,7 +102,7 @@ func (s *Server) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	err = models.UpdateUser(r.Context(), s.db, &user)
 	if err != nil {
-		responses.Error(w, http.StatusInternalServerError, errors.New("Failed to update user"))
+		responses.Error(w, http.StatusInternalServerError, errors.New("failed to update user"))
 		return
 	}
 
@@ -116,24 +116,24 @@ func (s *Server) DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := strconv.Atoi(id)
 	if err != nil {
-		responses.Error(w, http.StatusBadRequest, errors.New("User ID must be an integer value"))
+		responses.Error(w, http.StatusBadRequest, errors.New("user ID must be an integer value"))
 		return
 	}
 
 	user, err := models.FindUserByID(r.Context(), s.db, userID)
 
 	if errors.Is(err, UserNotFoundErr) {
-		responses.Error(w, http.StatusNotFound, errors.New("User with given ID was not found"))
+		responses.Error(w, http.StatusNotFound, errors.New("user with given ID was not found"))
 		return
 	}
 	if err != nil {
-		responses.Error(w, http.StatusInternalServerError, errors.New("Failed to delete user"))
+		responses.Error(w, http.StatusInternalServerError, errors.New("failed to delete user"))
 		return
 	}
 
 	err = models.DeleteUser(r.Context(), s.db, user.ID)
 	if err != nil {
-		responses.Error(w, http.StatusInternalServerError, errors.New("Failed to delete user"))
+		responses.Error(w, http.StatusInternalServerError, errors.New("failed to delete user"))
 		return
 	}
 

@@ -15,7 +15,7 @@ func (v *Validator) ValidateNewUser(ctx context.Context, newUser models.User) er
 	}
 
 	if newUser.Password == "" {
-		return errors.New("Password is a required field")
+		return errors.New("password is a required field")
 	}
 
 	newUsername, err := v.isUniqueUsername(ctx, newUser.Username)
@@ -24,7 +24,7 @@ func (v *Validator) ValidateNewUser(ctx context.Context, newUser models.User) er
 	}
 
 	if !newUsername {
-		return errors.New("Username is already taken")
+		return errors.New("username is already taken")
 	}
 
 	newAccount, err := v.isUniqueEmail(ctx, newUser.Email)
@@ -33,7 +33,7 @@ func (v *Validator) ValidateNewUser(ctx context.Context, newUser models.User) er
 	}
 
 	if !newAccount {
-		return errors.New("An account with the given email already exists")
+		return errors.New("an account with the given email already exists")
 	}
 
 	return nil
@@ -64,7 +64,7 @@ func (v *Validator) ValidateUpdatedFields(ctx context.Context, user models.User)
 		}
 
 		if !newEmail {
-			return errors.New("An account with the email provided already exists")
+			return errors.New("an account with the email provided already exists")
 		}
 	}
 
@@ -77,7 +77,7 @@ func (v *Validator) ValidateUpdatedFields(ctx context.Context, user models.User)
 		}
 
 		if !uniqueUsername {
-			return errors.New("Username is already taken")
+			return errors.New("username is already taken")
 		}
 	}
 
@@ -92,15 +92,15 @@ func (v *Validator) ValidateUpdatedFields(ctx context.Context, user models.User)
 func validateUserFields(user models.User) error {
 
 	if user.Username == "" || user.Email == "" {
-		return errors.New("Username and email are required fields")
+		return errors.New("username and email are required fields")
 	}
 
 	if user.StatusID == 0 || user.RoleID == 0 {
-		return errors.New("User must be assigned a role and status")
+		return errors.New("user must be assigned a role and status")
 	}
 
 	if !isValidEmail(user.Email) {
-		return errors.New("Email address provided is not valid")
+		return errors.New("email address provided is not valid")
 	}
 
 	return nil
@@ -118,7 +118,7 @@ func (v *Validator) isUniqueUsername(ctx context.Context, username string) (bool
 
 	exists, err := models.UserExistsByUsername(ctx, v.DB, username)
 	if err != nil {
-		return false, errors.New("Unable to check username: " + err.Error())
+		return false, errors.New("unable to check username: " + err.Error())
 	}
 
 	return !exists, nil
@@ -128,7 +128,7 @@ func (v *Validator) isUniqueEmail(ctx context.Context, email string) (bool, erro
 
 	exists, err := models.UserExistsByEmail(ctx, v.DB, email)
 	if err != nil {
-		return false, errors.New("Unable to check email: " + err.Error())
+		return false, errors.New("unable to check email: " + err.Error())
 	}
 
 	return !exists, nil
