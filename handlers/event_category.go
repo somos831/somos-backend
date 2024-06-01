@@ -3,13 +3,22 @@ package handlers
 import (
 	"errors"
 	"net/http"
+
+	"github.com/somos831/somos-backend/models"
+	"github.com/somos831/somos-backend/responses"
 )
 
 var errNonNumericEventCategoryId = errors.New("event category id must be an integer")
 
 // ListAllCategories lists all the categories in the database.
 func (s *Server) ListAllCategories(w http.ResponseWriter, r *http.Request) {
-	panic("todo")
+
+	eventCategories, err := models.GetAllCategories(r.Context(), s.db)
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, errors.New("failed to get event categories"))
+	}
+
+	responses.Json(w, http.StatusOK, eventCategories)
 }
 
 // GetCategory returns a single category by its id.

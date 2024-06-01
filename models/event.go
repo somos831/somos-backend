@@ -13,7 +13,8 @@ type Event struct {
 	Id              int     `json:"id"`
 	Title           string  `json:"title"`
 	Description     *string `json:"description"`
-	Date            string  `json:"date"`
+	StartDate       string  `json:"start_date"`
+	EndDate         string  `json:"end_date"`
 	OrganizationId  *int    `json:"organization_id"`
 	ImageId         *int    `json:"image_id"`
 	LocationId      *int    `json:"location_id"`
@@ -24,6 +25,8 @@ type Event struct {
 	AdditionalUrl   *string `json:"additional_url"`
 	CreatedAt       string  `json:"created_at"`
 	UpdatedAt       string  `json:"updated_at"`
+	IsVisible       bool    `json:"is_visible"`
+	ContactInfo     string  `json:"contact_info"`
 }
 
 // FindNRecentEvents finds the n most recent events in db and orders them from
@@ -42,7 +45,8 @@ func FindNRecentEvents(ctx context.Context, db *sql.DB, n int) ([]Event, error) 
 			&event.Id,
 			&event.Title,
 			&event.Description,
-			&event.Date,
+			&event.StartDate,
+			&event.EndDate,
 			&event.OrganizationId,
 			&event.ImageId,
 			&event.LocationId,
@@ -53,6 +57,8 @@ func FindNRecentEvents(ctx context.Context, db *sql.DB, n int) ([]Event, error) 
 			&event.AdditionalUrl,
 			&event.CreatedAt,
 			&event.UpdatedAt,
+			&event.IsVisible,
+			&event.ContactInfo,
 		)
 
 		if err != nil {
@@ -75,7 +81,8 @@ func FindEventById(ctx context.Context, db *sql.DB, eventId int) (*Event, error)
 		&event.Id,
 		&event.Title,
 		&event.Description,
-		&event.Date,
+		&event.StartDate,
+		&event.EndDate,
 		&event.OrganizationId,
 		&event.ImageId,
 		&event.LocationId,
@@ -86,6 +93,8 @@ func FindEventById(ctx context.Context, db *sql.DB, eventId int) (*Event, error)
 		&event.AdditionalUrl,
 		&event.CreatedAt,
 		&event.UpdatedAt,
+		&event.IsVisible,
+		&event.ContactInfo,
 	)
 
 	if err != nil {
@@ -106,7 +115,8 @@ func InsertEvent(ctx context.Context, db *sql.DB, event Event) (int, error) {
 		INSERT INTO events (
 			title,
 			description,
-			date,
+			start_date,
+			end_date,
 			organization_id,
 			image_id,
 			location_id,
@@ -114,13 +124,15 @@ func InsertEvent(ctx context.Context, db *sql.DB, event Event) (int, error) {
 			price,
 			category_id,
 			additional_info,
-			additional_url
-		) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
+			additional_url,
+			contact_info
+		) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
 	`
 	result, err := db.ExecContext(ctx, query,
 		event.Title,
 		event.Description,
-		event.Date,
+		event.StartDate,
+		event.EndDate,
 		event.OrganizationId,
 		event.ImageId,
 		event.LocationId,
@@ -129,6 +141,7 @@ func InsertEvent(ctx context.Context, db *sql.DB, event Event) (int, error) {
 		event.CategoryId,
 		event.AdditionalInfo,
 		event.AdditionalUrl,
+		event.ContactInfo,
 	)
 
 	if err != nil {
@@ -155,7 +168,8 @@ func UpdateEvent(ctx context.Context, db *sql.DB, event *Event) error {
 		UPDATE events SET
 			title = ?,
 			description = ?,
-			date = ?,
+			start_date = ?,
+			end_date = ?,
 			organization_id = ?,
 			image_id = ?,
 			location_id = ?,
@@ -164,13 +178,15 @@ func UpdateEvent(ctx context.Context, db *sql.DB, event *Event) error {
 			category_id = ?,
 			additional_info = ?,
 			additional_url = ?,
+			contact_info = ?,
 			updated_at = CURRENT_TIMESTAMP
 		WHERE id = ?
 	`
 	_, err := db.ExecContext(ctx, query,
 		event.Title,
 		event.Description,
-		event.Date,
+		event.StartDate,
+		event.EndDate,
 		event.OrganizationId,
 		event.ImageId,
 		event.LocationId,
@@ -179,17 +195,12 @@ func UpdateEvent(ctx context.Context, db *sql.DB, event *Event) error {
 		event.CategoryId,
 		event.AdditionalInfo,
 		event.AdditionalUrl,
+		event.ContactInfo,
 		event.Id,
 	)
 
 	if err != nil {
 		log.Printf("failed to update event: %s\n", err)
-		return err
-	}
-
-	query = `SELECT created_at, updated_at FROM events WHERE id = ?`
-	row := db.QueryRowContext(ctx, query, event.Id)
-	if err := row.Scan(&event.CreatedAt, &event.UpdatedAt); err != nil {
 		return err
 	}
 

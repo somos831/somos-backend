@@ -15,6 +15,34 @@ type EventCategory struct {
 	Name string `json:"name"`
 }
 
+func GetAllCategories(ctx context.Context, db *sql.DB) ([]EventCategory, error) {
+	query := `SELECT * FROM event_categories`
+	rows, err := db.QueryContext(ctx, query)
+	if err != nil {
+		log.Printf("failed to get event_categories: %s\n", err)
+		return []EventCategory{}, err
+	}
+	defer rows.Close()
+
+	var eventCategories []EventCategory
+	for rows.Next() {
+		var eCategory EventCategory
+
+		err := rows.Scan(&eCategory.Id, &eCategory.Name)
+		if err != nil {
+			log.Printf("failed to get event_categories: %s\n", err)
+		}
+		eventCategories = append(eventCategories, eCategory)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Printf("error encountered while iterating over event category rows: %s", err)
+		return []EventCategory{}, err
+	}
+
+	return eventCategories, nil
+}
+
 // FindEventCategoryById finds a category in db using categoryId.
 func FindEventCategoryById(ctx context.Context, db *sql.DB, categoryId int) (*EventCategory, error) {
 	query := `SELECT * FROM event_categories WHERE id = ?`

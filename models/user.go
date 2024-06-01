@@ -56,14 +56,14 @@ func InsertUser(ctx context.Context, db *sql.DB, user *User) (int, error) {
 
 	result, err := db.ExecContext(ctx, query, user.Username, user.Email, user.Password, user.FirstName, user.LastName, user.ProfilePicture, user.StatusID, user.RoleID)
 	if err != nil {
-		log.Printf("Failed to create user due to: %s\n", err.Error())
+		log.Printf("failed to create user due to: %s\n", err.Error())
 		return 0, err
 	}
 
 	// Get the ID of the newly inserted user
 	userID, err := result.LastInsertId()
 	if err != nil {
-		log.Printf("Failed to fetch created user ID: %s\n", err.Error())
+		log.Printf("failed to fetch created user ID: %s\n", err.Error())
 		return 0, err
 	}
 
@@ -76,7 +76,7 @@ func UpdateUser(ctx context.Context, db *sql.DB, user *User) error {
 
 	_, err := db.ExecContext(ctx, query, user.Username, user.Email, user.FirstName, user.LastName, user.ProfilePicture, user.StatusID, user.RoleID, user.ID)
 	if err != nil {
-		log.Printf("Failed to update user due to: %s", err.Error())
+		log.Printf("failed to update user due to: %s", err.Error())
 		return err
 	}
 
@@ -111,7 +111,7 @@ func DeleteUser(ctx context.Context, db *sql.DB, userID int) error {
 
 	_, err := db.ExecContext(ctx, "DELETE FROM users WHERE ID = ?", userID)
 	if err != nil {
-		log.Printf("Failed to delete user due to: %s\n", err.Error())
+		log.Printf("failed to delete user due to: %s\n", err.Error())
 		return err
 	}
 
