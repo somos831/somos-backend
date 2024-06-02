@@ -10,13 +10,13 @@ type Location struct {
 	Id      int    `json:"id"`
 	Name    string `json:"name"`
 	Address string `json:"address"`
-	URL     string `json:"url"`
+	MapURL  string `json:"map_url"`
 }
 
 func InsertLocation(ctx context.Context, db *sql.DB, loc Location) (int, error) {
-	query := "INSERT INTO locations (name, address, url) VALUES (?, ?, ?)"
+	query := "INSERT INTO locations (name, address, map_url) VALUES (?, ?, ?)"
 
-	result, err := db.ExecContext(ctx, query, loc.Name, loc.Address, loc.URL)
+	result, err := db.ExecContext(ctx, query, loc.Name, loc.Address, loc.MapURL)
 	if err != nil {
 		log.Printf("failed to insert location details: %s\n", err)
 		return 0, err
