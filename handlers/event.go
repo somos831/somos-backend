@@ -81,8 +81,8 @@ func (s *Server) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := map[string]interface{}{
-		"id": eventId,
+	res := map[string]int{
+		"event_id": eventId,
 	}
 	responses.Json(w, http.StatusCreated, res)
 }

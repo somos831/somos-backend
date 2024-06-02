@@ -9,6 +9,8 @@ func (s *Server) InitRoutes() {
 
 	s.Router.HandleFunc("/categories", s.ListAllCategories).Methods("GET")
 
+	s.Router.HandleFunc("/locations", s.CreateLocation).Methods("POST")
+
 	s.Router.HandleFunc("/users", s.CreateUser).Methods("POST")
 	s.Router.HandleFunc("/users/{id}", s.GetUserByID).Methods("GET")
 	s.Router.HandleFunc("/users/{id}", s.DeleteUser).Methods("DELETE")
