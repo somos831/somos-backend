@@ -41,7 +41,7 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Return the ID of the newly created user in the response
-	jsonResponse := map[string]int{"userID": userID}
+	jsonResponse := map[string]int{"user_id": userID}
 	responses.Json(w, http.StatusCreated, jsonResponse)
 }
 
